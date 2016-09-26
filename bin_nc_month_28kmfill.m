@@ -103,6 +103,8 @@ for iy = years
                 end
             end % loop on nd (number of days in each ndperiod)
             
+            % Average ndays. Note that -999 was converted to NaN before
+            VARSOUT(:,iv) = nanmean(TMP2,2);
             
             % Store complete stats only for 1 DMSPt product
             if strcmp('dmspt_Asst_chlgsm',varname)
@@ -126,9 +128,6 @@ for iy = years
                 dlmwrite(sprintf('summary_%s_%s_28km_%s.txt',varname,period,date),M2,'-append')
                 dlmwrite(sprintf('summary_65N_%s_%s_28km_%s.txt',varname,period,date),M2_65,'-append')
             end
-            
-            % Average ndays. Note that -999 was converted to NaN before
-            VARSOUT(:,iv) = nanmean(TMP2,2);
             
         end % loop on varnameS
         
