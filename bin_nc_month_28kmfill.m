@@ -52,7 +52,7 @@ for iy = years
         
         mo = mo + 1;
         
-        % Preallocate output
+        % Preallocate output: macropixel means (grid 2), n variables, ndays
         VARSOUT = nan(npixels2,length(varnameS));
         
         for iv = 1:length(varnameS)
@@ -74,12 +74,15 @@ for iy = years
                 file_test = ['grep ' filename ' ' sensor sensorSST '_list.txt']; % file list in local folder
                 status = system(file_test);
                 if ~status % test file
+                    sprintf('File %s found',filename)
                     filepath = sprintf('%s%0.0f/%03.0f/%s',dirpath,iy,ip+id,filename);
                     ni=ncinfo(filepath);
                     stra=char(ni.Variables.Name);
                     var_test = strmatch(varname,stra,'exact');
                     if ~isempty(var_test) % test variable
+                        sprintf('Opening %s, variable %s',filename,varname)
                         var_grid1 = ncread(filepath,varname);
+                        var_grid1(var_grid1==-999) = nan;
                         var_grid2 = repbin_grid1_grid2(var_grid1,indlist); % reproject and bin from grid1 to grid2
                         TMP1(:,id+1) = var_grid1;
                         TMP2(:,id+1) = var_grid2;
@@ -88,6 +91,7 @@ for iy = years
                         if strcmp('dmspt_Asst_chlgsm',varname)
                             % On grid1
                             Ice1 = ncread(filepath,'Ice');
+                            Ice1(Ice1<0 | Ice1>1) = nan; % remove -999 values or values >1 (used as flag)
                             npixels1MAR(id+1) = sum(zbot1<0 & Ice1<ice_crit); % npixels non-terrestrial with Ice<ice_crit
                             npixels1MAR65N(id+1) = sum(zbot1<0 & Ice1<ice_crit & lat1>=65); % npixels non-terrestrial with Ice<ice_crit and >65N
                             % On grid2
@@ -123,11 +127,8 @@ for iy = years
                 dlmwrite(sprintf('summary_65N_%s_%s_28km_%s.txt',varname,period,date),M2_65,'-append')
             end
             
-            % Average ndays.
-            if ~status && ~isempty(var_test)
-                % TMP1(TMP1==-999) = nan; % no longer needed since -999 converted to nan before
-                VARSOUT(:,iv) = nanmean(TMP2,2);
-            end
+            % Average ndays. Note that -999 was converted to NaN before
+            VARSOUT(:,iv) = nanmean(TMP2,2);
             
         end % loop on varnameS
         
