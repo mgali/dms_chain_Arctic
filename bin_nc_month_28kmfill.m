@@ -83,6 +83,10 @@ for iy = years
                         sprintf('Opening %s, variable %s',filename,varname)
                         var_grid1 = ncread(filepath,varname);
                         var_grid1(var_grid1==-999) = nan;
+                        if strcmp('Ice',varname)
+                            var_grid1(var_grid1==max(var_grid1)) = 0;
+                            var_grid1(var_grid1<0 | var_grid1>1) = nan;
+                        end
                         var_grid2 = repbin_grid1_grid2(var_grid1,indlist); % reproject and bin from grid1 to grid2
                         TMP1(:,id+1) = var_grid1;
                         TMP2(:,id+1) = var_grid2;
