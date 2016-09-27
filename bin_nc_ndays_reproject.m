@@ -56,14 +56,14 @@ for iy = years
             varname = varnameS{iv};
             
             % Preallocate data storage over ndays
-            TMP1 = nan(npixels1,ndays(mo));
-            TMP2 = nan(npixels2,ndays(mo));
+            TMP1 = nan(npixels1,ndays);
+            TMP2 = nan(npixels2,ndays);
             
             % Preallocate data storage over ndays statistics for grids 1 and 2
-            npixels1MAR = nan(1,ndays(mo));
-            npixels1MAR65N = nan(1,ndays(mo));
-            npixels2MAR = nan(1,ndays(mo));
-            npixels2MAR65N = nan(1,ndays(mo));
+            npixels1MAR = nan(1,ndays);
+            npixels1MAR65N = nan(1,ndays);
+            npixels2MAR = nan(1,ndays);
+            npixels2MAR65N = nan(1,ndays);
             
             nd = ndays-1;
             if length(ndperiod)>1 && ip==ndperiod(end)

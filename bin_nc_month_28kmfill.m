@@ -1,39 +1,40 @@
 % BIN DAILY IMAGES TO SPECIFIED PERIOD (NDAYS)
 % Martí Galí Tàpias, 18 Feb 2016
+% Improved 26 Sep 2016
 tic
 
 % May want to remove summary text files
 % ! rm Feb2016_summary*
 
+%% Some initial settings
 varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
 years = 2003:2015; % normally 2003:2015
 ndays = [31 28 31 30 31 30 31 31 30 31 30 31];
 period = 'MONTH';
 ice_crit = 0.1;
+kmgrid2 = '28'; % 28, 37 or 46 km macropixel size
+outformat = 'netcdf'; % 'netcdf' r 'text'
 
 %% Set file paths and name
 dirpath = '/Volumes/output-dev/Takuvik/Teledetection/Couleur/SORTIES/34_2_0/NOCLIM/'; % or 35_0_0 just for 2015
-gridpath = '/Volumes/output-prod/Takuvik/Teledetection/All/Constant/';
-mldpath = '/Volumes/output-prod/Takuvik/Teledetection/All/Clim/MLD/';
+grid1path = '/Volumes/output-prod/Takuvik/Teledetection/All/Constant/';
+grid2path = '~/Desktop/Grids_maps/grids/grid';
 outpath = '/Volumes/rap/martigalitapias/binned_data/';
 sensor = 'A';
 sensorSST = 'M';
 
 %% Grid 1
-lat1 = ncread(strcat(gridpath,sensor,'45N.nc'),'lat');
+lat1 = ncread(strcat(grid1path,sensor,'45N.nc'),'lat');
 zbot1 = ncread('/Volumes/output-prod/Takuvik/Teledetection/Couleur/SORTIES/Bathymetre/Province_Zbot_MODISA_L3binV2.nc','Zbot');
 npixels1 = length(lat1);
 
 %% Grid 2, conversion scheme
-kmgrid2 = '28'; % 28, 37 or 46
 load(strcat('~/Desktop/Geophysical_data/Bathymetry_gebco08/Grids_SW_MODIS_4gebco/gebco_08_',kmgrid2,'km.mat'));
 zbot2 = zbotmin;
-grid2 = dlmread(['~/Desktop/Grids_maps/grids/grid' kmgrid2 'km_45N.txt']);
+grid2 = dlmread([grid2path kmgrid2 'km_45N.txt']);
 lat2 = grid2(:,2);
 npixels2 = length(lat2);
 load(['indlist_A45N_to_' kmgrid2 'km.mat']); % grid conversion scheme
-% load(['indlist_' kmgrid2 'km_to_A45N.mat']) % no reverse conversion (too
-% long)
 
 %% Binning
 for iy = years
@@ -63,7 +64,7 @@ for iy = years
             TMP1 = nan(npixels1,ndays(mo));
             TMP2 = nan(npixels2,ndays(mo));
             
-            % Preallocate data storage over ndaysstatistics for grids 1 and 2
+            % Preallocate data storage over ndays statistics for grids 1 and 2
             npixels1MAR = nan(1,ndays(mo));
             npixels1MAR65N = nan(1,ndays(mo));
             npixels2MAR = nan(1,ndays(mo));
@@ -127,25 +128,29 @@ for iy = years
                     M2 = [iy ip 0 0 0 0 0 nan nan nan nan];
                     M2_65 = [iy ip 0 0 0 0 0 nan nan nan nan];
                 end
-                dlmwrite(sprintf('summary_%s_%s_4km_%s.txt',varname,period,date),M1,'-append')
-                dlmwrite(sprintf('summary_65N_%s_%s_4km_%s.txt',varname,period,date),M1_65,'-append')
-                dlmwrite(sprintf('summary_%s_%s_28km_%s.txt',varname,period,date),M2,'-append')
-                dlmwrite(sprintf('summary_65N_%s_%s_28km_%s.txt',varname,period,date),M2_65,'-append')
+                dlmwrite(sprintf('summary_%s_%s_4km_%s.txt',varname,period, date),M1,'-append')
+                dlmwrite(sprintf('summary65N_%s_%s_4km_%s.txt',varname,period,date),M1_65,'-append')
+                dlmwrite(sprintf('summary_%s_%s_%skm_%s.txt',varname,period,kmgrid2,date),M2,'-append')
+                dlmwrite(sprintf('summary65N_%s_%s_%skm_%s.txt',varname,period,kmgrid2,date),M2_65,'-append')
             end
             
         end % loop on varnameS
         
-        % Write netcdf
-        VARSOUT(isnan(VARSOUT)) = -999;
+        % Write netcdf or text file
         newvarnameS = varnameS;
-        ncoutname = sprintf('%s%c%c_%s_28km/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorSST,period,iy,sensor,sensorSST,iy,ip,period);
+        outname = sprintf('%s%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorSST,period,kmgrid2,iy,sensor,sensorSST,iy,ip,period);
         if ~isempty(VARSOUT)
-            for iv = 1:length(newvarnameS)
-                nccreate(ncoutname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
-                ncwrite(ncoutname,newvarnameS{iv},VARSOUT(:,iv));
+            if strcmp(outformat,'netcdf')
+                for iv = 1:length(newvarnameS)
+                    nccreate(outname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
+                    ncwrite(outname,newvarnameS{iv},VARSOUT(:,iv));
+                end
+            elseif strcmp(outformat,'text')
+                dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
             end
         end
         
     end % loop on nday periods
+    toc, iy
 end % loop on years
 toc
