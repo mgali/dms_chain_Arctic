@@ -84,7 +84,12 @@ for iy = years
                         sprintf('Opening %s, variable %s',filename,varname)
                         var_grid1 = ncread(filepath,varname);
                         var_grid1(var_grid1==-999) = nan;
-                        if strcmp('Ice',varname)
+                        if ~strcmp('Ice',varname)
+                            Ice1 = ncread(filepath,'Ice');
+                            Ice1(Ice1==max(Ice1)) = 0;
+                            Ice1(Ice1<0 | Ice1>1) = nan; % remove -999 values or values >1 (used as flag)
+                            var_grid1(Ice1 > ice_crit) = nan; % do not use ocean color data with Ice>0.1 (sub-pixel contamination not corrected)
+                        else
                             var_grid1(var_grid1==max(var_grid1)) = 0;
                             var_grid1(var_grid1<0 | var_grid1>1) = nan;
                         end
@@ -95,8 +100,6 @@ for iy = years
                         % Prepare marine pixel count for stats only for 1 DMSPt product
                         if strcmp('dmspt_Asst_chlgsm',varname)
                             % On grid1
-                            Ice1 = ncread(filepath,'Ice');
-                            Ice1(Ice1<0 | Ice1>1) = nan; % remove -999 values or values >1 (used as flag)
                             npixels1MAR(id+1) = sum(zbot1<0 & Ice1<ice_crit); % npixels non-terrestrial with Ice<ice_crit
                             npixels1MAR65N(id+1) = sum(zbot1<0 & Ice1<ice_crit & lat1>=65); % npixels non-terrestrial with Ice<ice_crit and >65N
                             % On grid2
