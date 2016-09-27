@@ -13,6 +13,7 @@ years = 2003:2015;
 ndays = 8; % number of days averaged
 ndperiod = 1 + ndays*(0:(365/ndays)); % defines first day of n-days period
 ndperiod(ndperiod>366-floor(ndays/2)) = []; % remove periods starting too close to end of year relative to binning interval
+period = 'D';
 ice_crit = 0.1;
 kmgrid2 = '28'; % 28, 37 or 46 km macropixel size
 outformat = 'netcdf'; % 'netcdf' r 'text'
@@ -133,17 +134,17 @@ for iy = years
                     M2 = [iy ip 0 0 0 0 0 nan nan nan nan];
                     M2_65 = [iy ip 0 0 0 0 0 nan nan nan nan];
                 end
-                dlmwrite(sprintf('summary_%s_%sD_4km_%s.txt',varname,period, date),M1,'-append')
-                dlmwrite(sprintf('summary65N_%s_%sD_4km_%s.txt',varname,period,date),M1_65,'-append')
-                dlmwrite(sprintf('summary_%s_%sD_%skm_%s.txt',varname,period,kmgrid2,date),M2,'-append')
-                dlmwrite(sprintf('summary65N_%s_%sD_%skm_%s.txt',varname,period,kmgrid2,date),M2_65,'-append')
+                dlmwrite(sprintf('summary_%s_%0.0f%s_4km_%s.txt',varname,ndays,period, date),M1,'-append')
+                dlmwrite(sprintf('summary65N_%s_%0.0f%s_4km_%s.txt',varname,ndays,period,date),M1_65,'-append')
+                dlmwrite(sprintf('summary_%s_%0.0f%s_%skm_%s.txt',varname,ndays,period,kmgrid2,date),M2,'-append')
+                dlmwrite(sprintf('summary65N_%s_%0.0f%s_%skm_%s.txt',varname,ndays,period,kmgrid2,date),M2_65,'-append')
             end
             
         end % loop on varnameS
 
         % Write netcdf or text file
         newvarnameS = varnameS;
-        outname = sprintf('%s%c%c_%sD_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorSST,period,kmgrid2,iy,sensor,sensorSST,iy,ip,period);
+        outname = sprintf('%s%c%c_%0.0f%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorSST,ndays,period,kmgrid2,iy,sensor,sensorSST,iy,ip,period);
         if ~isempty(VARSOUT)
             if strcmp(outformat,'netcdf')
                 for iv = 1:length(newvarnameS)
