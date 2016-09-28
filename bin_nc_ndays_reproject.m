@@ -116,7 +116,7 @@ for iy = years
             
             % Average ndays. Note that -999 was converted to NaN before
             VARSOUT(:,iv) = nanmean(TMP2,2);
-                        
+            
             % Store complete stats only for 1 DMSPt product
             if strcmp('dmspt_Asst_chlgsm',varname)
                 if ~status && ~isempty(var_test)
@@ -141,20 +141,20 @@ for iy = years
             end
             
         end % loop on varnameS
-
-        % Write netcdf or text file
-        newvarnameS = varnameS;
-        outname = sprintf('%s%c%c_%0.0f%s_%skm/%0.0f/%c%c%0.0f%03.0f_%0.0f%s.nc',outpath,sensor,sensorSST,ndays,period,kmgrid2,iy,sensor,sensorSST,iy,ip,ndays,period);
-        if ~isempty(VARSOUT)
-            if strcmp(outformat,'netcdf')
-                for iv = 1:length(newvarnameS)
-                    nccreate(outname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
-                    ncwrite(outname,newvarnameS{iv},VARSOUT(:,iv));
-                end
-            elseif strcmp(outformat,'text')
-                dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
-            end
-        end
+        
+        %         % Write netcdf or text file
+        %         newvarnameS = varnameS;
+        %         outname = sprintf('%s%c%c_%0.0f%s_%skm/%0.0f/%c%c%0.0f%03.0f_%0.0f%s.nc',outpath,sensor,sensorSST,ndays,period,kmgrid2,iy,sensor,sensorSST,iy,ip,ndays,period);
+        %         if ~isempty(VARSOUT)
+        %             if strcmp(outformat,'netcdf')
+        %                 for iv = 1:length(newvarnameS)
+        %                     nccreate(outname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
+        %                     ncwrite(outname,newvarnameS{iv},VARSOUT(:,iv));
+        %                 end
+        %             elseif strcmp(outformat,'text')
+        %                 dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
+        %             end
+        %         end
         
     end % loop on nday periods
     toc, iy
