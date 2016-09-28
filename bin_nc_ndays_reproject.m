@@ -144,7 +144,7 @@ for iy = years
 
         % Write netcdf or text file
         newvarnameS = varnameS;
-        outname = sprintf('%s%c%c_%0.0f%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorSST,ndays,period,kmgrid2,iy,sensor,sensorSST,iy,ip,period);
+        outname = sprintf('%s%c%c_%0.0f%s_%skm/%0.0f/%c%c%0.0f%03.0f_%0.0f%s.nc',outpath,sensor,sensorSST,ndays,period,kmgrid2,iy,sensor,sensorSST,iy,ip,ndays,period);
         if ~isempty(VARSOUT)
             if strcmp(outformat,'netcdf')
                 for iv = 1:length(newvarnameS)
