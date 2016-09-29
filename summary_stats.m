@@ -10,7 +10,7 @@ cnt_data_ndays_mean = sum(~isnan(MAT_INmean)); % single value
 OUT = [mean(cnt_data_ndays)... % mean coverage in n images with spatial binning gap filling
         mean(cnt_data_ndays./npixelsMAR_in)... % mean fractional coverage prior to temporal binning
         cnt_data_ndays_mean...  % mean coverage after temporal binning
-        cnt_data_ndays_mean/mean(npixelsMAR_in)... % mean fractional coverage after temporal binning
+        cnt_data_ndays_mean/max(npixelsMAR_in)... % mean fractional coverage after temporal binning. Need to use MAX number of marine pixels to avoid fractions >1!!!
         mean(sum(~isnan(MAT_IN(~isnan(MAT_INmean),:)),2))... % mean observations per observed pixel during binning period
         nanmean(MAT_INmean)... % variable mean of means
         nanmean(MAT_IN(:))... % variable mean of all data
