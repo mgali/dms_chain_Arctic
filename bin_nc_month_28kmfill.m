@@ -7,7 +7,8 @@ tic
 % ! rm Feb2016_summary*
 
 %% Some initial settings
-varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
+% varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
+varnameS  = {'dmspt_Asst_chlgsm'}; % VERSION STATS ONLY
 years = 2003:2015; % normally 2003:2015
 ndays = [31 28 31 30 31 30 31 31 30 31 30 31];
 period = 'MONTH';
