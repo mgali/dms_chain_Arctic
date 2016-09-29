@@ -32,7 +32,7 @@ for yyyy = years
         
         % Write to summary file
         dummy1 = regexp(flist(mmdd).name,'\.txt','split');
-        date_char = char(dummy2{1,1});
+        date_char = char(dummy1{1,1});
         
         tmp = [yyyy...
             str2double(date_char(9:10))...
