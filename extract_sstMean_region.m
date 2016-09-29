@@ -28,7 +28,7 @@ for yyyy = years
         filepath = ([datapath flist(mmdd).name]);
         datain = dlmread(filepath);
         datain = datain(indlist);
-        datain(datain==-999) = nan;
+        datain(datain < -1.689) = nan; % remove -999 (nan) and ice data (which have valid sst value <= -1.689)
         
         % Write to summary file
         dummy1 = regexp(flist(mmdd).name,'\.txt','split');
