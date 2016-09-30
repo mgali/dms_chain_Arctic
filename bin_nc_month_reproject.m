@@ -3,18 +3,15 @@
 % Improved 26 Sep 2016
 tic
 
-% May want to remove some summary files
+% May want to remove summary text files
 % ! rm Feb2016_summary*
 
 %% Some initial settings
-% varnameS = {'Ice' 'chl_gsm' 'chl_gsm_mustapha' 'chl_cota' 'PP' 'PAR_cloud' 'CF_mean'}; % VERSION FOR SOPHIE
 varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
 % varnameS  = {'dmspt_Asst_chlgsm'}; % VERSION STATS ONLY
-years = 2003:2015;
-ndays = 8; % number of days averaged
-ndperiod = 1 + ndays*(0:(365/ndays)); % defines first day of n-days period
-ndperiod(ndperiod>366-floor(ndays/2)) = []; % remove periods starting too close to end of year relative to binning interval
-period = 'D';
+years = 2003:2015; % normally 2003:2015
+ndays = [31 28 31 30 31 30 31 31 30 31 30 31];
+period = 'MONTH';
 ice_crit = 0.1;
 kmgrid2 = '28'; % 28, 37 or 46 km macropixel size
 outformat = 'netcdf'; % 'netcdf' r 'text'
@@ -43,12 +40,19 @@ load(['indlist_A45N_to_' kmgrid2 'km.mat']); % grid conversion scheme
 %% Binning
 for iy = years
     
+    % Define first day of month and number of days in month
+    if ~mod(iy,4)
+        ndays(2) = ndays(2) + 1; % leap year
+    end
     % Change version of PP files if year is 2015 or later
     if iy >= 2015
         dirpath = '/Volumes/output-dev/Takuvik/Teledetection/Couleur/SORTIES/35_0_0/NOCLIM/';
     end
-    
+    ndperiod = cumsum([1 ndays(1:(end-1))]);
+    mo = 0;
     for ip = ndperiod
+        
+        mo = mo + 1;
         
         % Preallocate output: macropixel means (grid 2), n variables, ndays
         VARSOUT = nan(npixels2,length(varnameS));
@@ -58,27 +62,20 @@ for iy = years
             varname = varnameS{iv};
             
             % Preallocate data storage over ndays
-            TMP1 = nan(npixels1,ndays);
-            TMP2 = nan(npixels2,ndays);
+            TMP1 = nan(npixels1,ndays(mo));
+            TMP2 = nan(npixels2,ndays(mo));
             
             % Preallocate data storage over ndays statistics for grids 1 and 2
-            npixels1MAR = nan(1,ndays);
-            npixels1MAR65N = nan(1,ndays);
-            npixels2MAR = nan(1,ndays);
-            npixels2MAR65N = nan(1,ndays);
+            npixels1MAR = nan(1,ndays(mo));
+            npixels1MAR65N = nan(1,ndays(mo));
+            npixels2MAR = nan(1,ndays(mo));
+            npixels2MAR65N = nan(1,ndays(mo));
             
-            nd = ndays-1;
-            if length(ndperiod)>1 && ip==ndperiod(end)
-                nd = 365-ip;
-                if ~mod(iy,4)
-                    nd = nd+1; % leap year
-                end
-            end
-            for id = 0:nd
+            for id = 0:(ndays(mo)-1)
                 filename = sprintf('%c%c%0.0f%03.0f_PP.nc',sensor,sensorSST,iy,ip+id);
                 file_test = ['grep ' filename ' ' sensor sensorSST '_list.txt']; % file list in local folder
                 status = system(file_test);
-                if ~status
+                if ~status % test file
                     sprintf('File %s found',filename)
                     filepath = sprintf('%s%0.0f/%03.0f/%s',dirpath,iy,ip+id,filename);
                     ni=ncinfo(filepath);
@@ -139,31 +136,31 @@ for iy = years
 %                     M2 = [iy ip 0 0 0 0 0 nan nan nan nan];
 %                     M2_65 = [iy ip 0 0 0 0 0 nan nan nan nan];
 %                 end
-%                 dlmwrite(sprintf('summary_%s_%0.0f%s_4km_%s.txt',varname,ndays,period, date),M1,'-append')
-%                 dlmwrite(sprintf('summary65N_%s_%0.0f%s_4km_%s.txt',varname,ndays,period,date),M1_65,'-append')
-%                 dlmwrite(sprintf('summary_%s_%0.0f%s_%skm_%s.txt',varname,ndays,period,kmgrid2,date),M2,'-append')
-%                 dlmwrite(sprintf('summary65N_%s_%0.0f%s_%skm_%s.txt',varname,ndays,period,kmgrid2,date),M2_65,'-append')
+%                 dlmwrite(sprintf('summary_%s_%s_4km_%s.txt',varname,period, date),M1,'-append')
+%                 dlmwrite(sprintf('summary65N_%s_%s_4km_%s.txt',varname,period,date),M1_65,'-append')
+%                 dlmwrite(sprintf('summary_%s_%s_%skm_%s.txt',varname,period,kmgrid2,date),M2,'-append')
+%                 dlmwrite(sprintf('summary65N_%s_%s_%skm_%s.txt',varname,period,kmgrid2,date),M2_65,'-append')
 %             end
             
         end % loop on varnameS
         
-        % Write netcdf or text file
-        newvarnameS = varnameS;
-        outname = sprintf('%s%c%c_%0.0f%s_%skm/%0.0f/%c%c%0.0f%03.0f_%0.0f%s.nc',outpath,sensor,sensorSST,ndays,period,kmgrid2,iy,sensor,sensorSST,iy,ip,ndays,period);
-        if ~isempty(VARSOUT)
-            if strcmp(outformat,'netcdf')
-                for iv = 1:length(newvarnameS)
-                    nccreate(outname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
-                    ncwrite(outname,newvarnameS{iv},VARSOUT(:,iv));
+                % Write netcdf or text file
+                newvarnameS = varnameS;
+                outname = sprintf('%s%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorSST,period,kmgrid2,iy,sensor,sensorSST,iy,ip,period);
+                if ~isempty(VARSOUT)
+                    if strcmp(outformat,'netcdf')
+                        for iv = 1:length(newvarnameS)
+                            nccreate(outname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
+                            ncwrite(outname,newvarnameS{iv},VARSOUT(:,iv));
+                        end
+                    elseif strcmp(outformat,'text')
+                        dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
+                    end
                 end
-            elseif strcmp(outformat,'text')
-                dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
-            end
-        end
         
     end % loop on nday periods
 end % loop on years
 toc
 
-bin_nc_ndaysCLIM
+bin_nc_monthCLIM
 

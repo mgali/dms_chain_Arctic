@@ -7,8 +7,8 @@ tic
 % ! rm Feb2016_summary*
 
 %% Some initial settings
-% varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
-varnameS  = {'dmspt_Asst_chlgsm'}; % VERSION STATS ONLY
+varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
+% varnameS  = {'dmspt_Asst_chlgsm'}; % VERSION STATS ONLY
 years = 2003:2015; % normally 2003:2015
 ndays = [31 28 31 30 31 30 31 31 30 31 30 31];
 period = 'MONTH';
@@ -140,19 +140,19 @@ for iy = years
             
         end % loop on varnameS
         
-        %         % Write netcdf or text file
-        %         newvarnameS = varnameS;
-        %         outname = sprintf('%s%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorSST,period,kmgrid2,iy,sensor,sensorSST,iy,ip,period);
-        %         if ~isempty(VARSOUT)
-        %             if strcmp(outformat,'netcdf')
-        %                 for iv = 1:length(newvarnameS)
-        %                     nccreate(outname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
-        %                     ncwrite(outname,newvarnameS{iv},VARSOUT(:,iv));
-        %                 end
-        %             elseif strcmp(outformat,'text')
-        %                 dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
-        %             end
-        %         end
+                % Write netcdf or text file
+                newvarnameS = varnameS;
+                outname = sprintf('%s%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorSST,period,kmgrid2,iy,sensor,sensorSST,iy,ip,period);
+                if ~isempty(VARSOUT)
+                    if strcmp(outformat,'netcdf')
+                        for iv = 1:length(newvarnameS)
+                            nccreate(outname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
+                            ncwrite(outname,newvarnameS{iv},VARSOUT(:,iv));
+                        end
+                    elseif strcmp(outformat,'text')
+                        dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
+                    end
+                end
         
     end % loop on nday periods
     toc, iy
