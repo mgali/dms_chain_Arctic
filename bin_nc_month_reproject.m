@@ -119,28 +119,28 @@ for iy = years
             VARSOUT(:,iv) = nanmean(TMP2,2);
             VARSOUT(isnan(VARSOUT)) = -999;
             
-%             % Store complete stats only for 1 DMSPt product
-%             if strcmp('dmspt_Asst_chlgsm',varname)
-%                 if ~status && ~isempty(var_test)
-%                     % Summary statistics for all latitudes
-%                     M1 = [iy ip summary_stats(TMP1,npixels1MAR)];
-%                     M2 = [iy ip summary_stats(TMP2,npixels2MAR)];
-%                     % Repeat summary stats for latitudes >65
-%                     TMP1(lat1<65,:) = [];
-%                     TMP2(lat2<65,:) = [];
-%                     M1_65 = [iy ip summary_stats(TMP1,npixels1MAR65N)];
-%                     M2_65 = [iy ip summary_stats(TMP2,npixels2MAR65N)];
-%                 else
-%                     M1 = [iy ip 0 0 0 0 0 nan nan nan nan];
-%                     M1_65 = [iy ip 0 0 0 0 0 nan nan nan nan];
-%                     M2 = [iy ip 0 0 0 0 0 nan nan nan nan];
-%                     M2_65 = [iy ip 0 0 0 0 0 nan nan nan nan];
-%                 end
-%                 dlmwrite(sprintf('summary_%s_%s_4km_%s.txt',varname,period, date),M1,'-append')
-%                 dlmwrite(sprintf('summary65N_%s_%s_4km_%s.txt',varname,period,date),M1_65,'-append')
-%                 dlmwrite(sprintf('summary_%s_%s_%skm_%s.txt',varname,period,kmgrid2,date),M2,'-append')
-%                 dlmwrite(sprintf('summary65N_%s_%s_%skm_%s.txt',varname,period,kmgrid2,date),M2_65,'-append')
-%             end
+            % Store complete stats only for 1 DMSPt product
+            if strcmp('dmspt_Asst_chlgsm',varname)
+                if ~status && ~isempty(var_test)
+                    % Summary statistics for all latitudes
+                    M1 = [iy ip summary_stats(TMP1,npixels1MAR)];
+                    M2 = [iy ip summary_stats(TMP2,npixels2MAR)];
+                    % Repeat summary stats for latitudes >65
+                    TMP1(lat1<65,:) = [];
+                    TMP2(lat2<65,:) = [];
+                    M1_65 = [iy ip summary_stats(TMP1,npixels1MAR65N)];
+                    M2_65 = [iy ip summary_stats(TMP2,npixels2MAR65N)];
+                else
+                    M1 = [iy ip 0 0 0 0 0 nan nan nan nan];
+                    M1_65 = [iy ip 0 0 0 0 0 nan nan nan nan];
+                    M2 = [iy ip 0 0 0 0 0 nan nan nan nan];
+                    M2_65 = [iy ip 0 0 0 0 0 nan nan nan nan];
+                end
+                dlmwrite(sprintf('summary_%s_%s_4km_%s.txt',varname,period, date),M1,'-append')
+                dlmwrite(sprintf('summary65N_%s_%s_4km_%s.txt',varname,period,date),M1_65,'-append')
+                dlmwrite(sprintf('summary_%s_%s_%skm_%s.txt',varname,period,kmgrid2,date),M2,'-append')
+                dlmwrite(sprintf('summary65N_%s_%s_%skm_%s.txt',varname,period,kmgrid2,date),M2_65,'-append')
+            end
             
         end % loop on varnameS
         
