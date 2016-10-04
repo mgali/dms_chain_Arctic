@@ -5,11 +5,13 @@ tic
 
 % May want to remove some summary files
 % ! rm Feb2016_summary*
+today=date;
 
 %% Some initial settings
-% varnameS = {'Ice' 'chl_gsm' 'chl_gsm_mustapha' 'chl_cota' 'PP' 'PAR_cloud' 'CF_mean'}; % VERSION FOR SOPHIE
-varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
+varnameS = {'Ice' 'chl_gsm' 'chl_gsm_mustapha' 'chl_cota' 'PP' 'PAR_cloud' 'CF_mean'}; % VERSION FOR SOPHIE
+% varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
 % varnameS  = {'dmspt_Asst_chlgsm'}; % VERSION STATS ONLY
+var4stats = 'chl_gsm';
 years = 2003:2015;
 ndays = 8; % number of days averaged
 ndperiod = 1 + ndays*(0:(365/ndays)); % defines first day of n-days period
@@ -105,7 +107,7 @@ for iy = years
                         TMP2(:,id+1) = var_grid2;
                         
                         % Prepare marine pixel count for stats only for 1 DMSPt product
-                        if strcmp('dmspt_Asst_chlgsm',varname)
+                        if strcmp(var4stats,varname)
                             % On grid1
                             npixels1MAR(id+1) = sum(zbot1<0 & Ice1<ice_crit); % npixels non-terrestrial with Ice<ice_crit
                             npixels1MAR65N(id+1) = sum(zbot1<0 & Ice1<ice_crit & lat1>=65); % npixels non-terrestrial with Ice<ice_crit and >65N
@@ -123,7 +125,7 @@ for iy = years
             VARSOUT(isnan(VARSOUT)) = -999;
             
             % Store complete stats only for 1 DMSPt product
-            if strcmp('dmspt_Asst_chlgsm',varname)
+            if strcmp(var4stats,varname)
                 if ~status && ~isempty(var_test)
                     % Summary statistics for all latitudes
                     M1 = [iy ip summary_stats(TMP1,npixels1MAR)];
@@ -139,24 +141,24 @@ for iy = years
                     M2 = [iy ip 0 0 0 0 0 nan nan nan nan];
                     M2_65 = [iy ip 0 0 0 0 0 nan nan nan nan];
                 end
-                dlmwrite(sprintf('summary_%s_%0.0f%s_4km_%s.txt',varname,ndays,period, date),M1,'-append')
-                dlmwrite(sprintf('summary65N_%s_%0.0f%s_4km_%s.txt',varname,ndays,period,date),M1_65,'-append')
-                dlmwrite(sprintf('summary_%s_%0.0f%s_%skm_%s.txt',varname,ndays,period,kmgrid2,date),M2,'-append')
-                dlmwrite(sprintf('summary65N_%s_%0.0f%s_%skm_%s.txt',varname,ndays,period,kmgrid2,date),M2_65,'-append')
+                dlmwrite(sprintf('summary_%s_%0.0f%s_4km_%s.txt',varname,ndays,period, today),M1,'-append')
+                dlmwrite(sprintf('summary65N_%s_%0.0f%s_4km_%s.txt',varname,ndays,period,today),M1_65,'-append')
+                dlmwrite(sprintf('summary_%s_%0.0f%s_%skm_%s.txt',varname,ndays,period,kmgrid2,today),M2,'-append')
+                dlmwrite(sprintf('summary65N_%s_%0.0f%s_%skm_%s.txt',varname,ndays,period,kmgrid2,today),M2_65,'-append')
             end
             
         end % loop on varnameS
         
         % Write netcdf or text file
-        newvarnameS = varnameS;
-        outname = sprintf('%s%c%c_%0.0f%s_%skm/%0.0f/%c%c%0.0f%03.0f_%0.0f%s.nc',outpath,sensor,sensorSST,ndays,period,kmgrid2,iy,sensor,sensorSST,iy,ip,ndays,period);
         if ~isempty(VARSOUT)
             if strcmp(outformat,'netcdf')
-                for iv = 1:length(newvarnameS)
-                    nccreate(outname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
-                    ncwrite(outname,newvarnameS{iv},VARSOUT(:,iv));
+                outname = sprintf('%s%c%c_%0.0f%s_%skm/%0.0f/%c%c%0.0f%03.0f_%0.0f%s.nc',outpath,sensor,sensorSST,ndays,period,kmgrid2,iy,sensor,sensorSST,iy,ip,ndays,period);
+                for iv = 1:length(varnameS)
+                    nccreate(outname,varnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
+                    ncwrite(outname,varnameS{iv},VARSOUT(:,iv));
                 end
             elseif strcmp(outformat,'text')
+                outname = sprintf('%s%c%c_%0.0f%s_%skm/%0.0f/%c%c%0.0f%03.0f_%0.0f%s.txt',outpath,sensor,sensorSST,ndays,period,kmgrid2,iy,sensor,sensorSST,iy,ip,ndays,period);
                 dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
             end
         end
@@ -165,5 +167,5 @@ for iy = years
 end % loop on years
 toc
 
-bin_nc_ndaysCLIM
+% bin_nc_ndaysCLIM
 

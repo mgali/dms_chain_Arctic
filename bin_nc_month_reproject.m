@@ -10,7 +10,6 @@ tic
 varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
 % varnameS  = {'dmspt_Asst_chlgsm'}; % VERSION STATS ONLY
 years = 2003:2015; % normally 2003:2015
-ndays = [31 28 31 30 31 30 31 31 30 31 30 31];
 period = 'MONTH';
 ice_crit = 0.1;
 kmgrid2 = '28'; % 28, 37 or 46 km macropixel size
@@ -40,6 +39,7 @@ load(['indlist_A45N_to_' kmgrid2 'km.mat']); % grid conversion scheme
 %% Binning
 for iy = years
     
+    ndays = [31 28 31 30 31 30 31 31 30 31 30 31];
     % Define first day of month and number of days in month
     if ~mod(iy,4)
         ndays(2) = ndays(2) + 1; % leap year

@@ -3,6 +3,7 @@ Instructions for binning Takuvik chain data.
 Done with code bin_nc_month_reproject.m or bin_nc_ndays_reproject.m. Calls:
 	repbin_grid1_grid2.m
 	summary_stats.m
+	*list*.txt with all daily *PP.nc files avaialble on Takuvik servers
  	(should be in same folder)
 
 	* Note that on 30-Sep-2016 bin_nc_month_reproject.m replaced bin_nc_month_28kmfill.m. The old file was no longer updated.
