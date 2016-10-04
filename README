@@ -1,20 +1,20 @@
 Instructions for binning Takuvik chain data.
 
-Done with code bin_nc_month_reproject.m or bin_nc_ndays_reproject.m. Calls:
+Done with code bin_nc_month_reproject.m or bin_nc_ndays_reproject.m. which call:
 	repbin_grid1_grid2.m
 	summary_stats.m
-	*list*.txt with all daily *PP.nc files avaialble on Takuvik servers
+	AM_list.txt, with all daily *PP.nc files avaialble on Takuvik servers
  	(should be in same folder)
 
 	* Note that on 30-Sep-2016 bin_nc_month_reproject.m replaced bin_nc_month_28kmfill.m. The old file was no longer updated.
 
-Climatological means calculated with bin_nc_*CLIM.m. Calls:
+Climatological means can be calculated with bin_nc_*CLIM.m, which call:
 	summary_statsCLIM.m
 
-May require...
-	- Updating the list of Takuvik chain files (e.g. AM_list.txt) used to test for file existence prior to making operations.
+Running the code on your computer may require...
+	- Updating the list of Takuvik chain files (AM_list.txt) used to test for file existence prior to making operations.
 	- Updating paths to: input files (Takuvik chain, grids, bathymetry)
-	- Removing summary*.txt files from directory.
-	- Commenting-uncommenting lines where type of output (*.nc vs. *.txt) is chosen.
-	- Editing main code (bin_nc*reproject.m) to choose years, n-days periods, variables, output name format (yyyyddd vs yyyymmdd)
+	- Removing old summary*.txt files from directory if they have been created on the same day (to avoid appending new dta on pre-existing file).
+	- Commenting-uncommenting lines where type of output (*.nc versus *.txt) is chosen.
+	- Editing main code (bin_nc*reproject.m) to choose years, n-days periods, variable names, variables that produce summary stats (var4stats), output name format (yyyyddd vs yyyymmdd)
 

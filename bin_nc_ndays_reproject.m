@@ -3,15 +3,13 @@
 % Improved 26 Sep 2016
 tic
 
-% May want to remove some summary files
-% ! rm Feb2016_summary*
-today=date;
+today = date;
 
 %% Some initial settings
-varnameS = {'Ice' 'chl_gsm' 'chl_gsm_mustapha' 'chl_cota' 'PP' 'PAR_cloud' 'CF_mean'}; % VERSION FOR SOPHIE
-% varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
+% varnameS = {'Ice' 'chl_gsm' 'chl_gsm_mustapha' 'chl_cota' 'PP' 'PAR_cloud' 'CF_mean'}; % VERSION FOR SOPHIE
+varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
 % varnameS  = {'dmspt_Asst_chlgsm'}; % VERSION STATS ONLY
-var4stats = 'chl_gsm';
+var4stats = 'dmspt_Asst_chlgsm';
 years = 2003:2015;
 ndays = 8; % number of days averaged
 ndperiod = 1 + ndays*(0:(365/ndays)); % defines first day of n-days period
@@ -167,5 +165,5 @@ for iy = years
 end % loop on years
 toc
 
-% bin_nc_ndaysCLIM
+bin_nc_ndaysCLIM % Uncomment if you want to run codde to compute climatological means after the spatiotemporal binning
 
