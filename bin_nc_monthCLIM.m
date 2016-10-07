@@ -82,8 +82,8 @@ for ip = 1:12
                     if strcmp('dmspt_Asst_chlgsm',varname)
                         % On grid2
                         Ice2 = ncread(filepath,'Ice');
-                        npixels2MAR(id+1) = sum(zbot2<0 & Ice2<ice_crit); % npixels non-terrestrial with Ice<ice_crit
-                        npixels2MAR65N(id+1) = sum(zbot2<0 & Ice2<ice_crit & lat2>=65); % npixels non-terrestrial with Ice<ice_crit and >65N
+                        npixels2MAR(cc) = sum(zbot2<0 & Ice2<ice_crit); % npixels non-terrestrial with Ice<ice_crit
+                        npixels2MAR65N(cc) = sum(zbot2<0 & Ice2<ice_crit & lat2>=65); % npixels non-terrestrial with Ice<ice_crit and >65N
                     end
                 end
             end
