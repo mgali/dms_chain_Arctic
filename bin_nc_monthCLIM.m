@@ -97,10 +97,10 @@ for ip = 1:12
         if strcmp('dmspt_Asst_chlgsm',varname)
             if ~status && ~isempty(var_test)
                 % Summary statistics for all latitudes
-                M2 = [ip summary_stats(TMP2,npixels2MAR)];
+                M2 = [ip summary_statsCLIM(TMP2,npixels2MAR)];
                 % Repeat summary stats for latitudes >65
                 TMP2(lat2<65,:) = [];
-                M2_65 = [ip summary_stats(TMP2,npixels2MAR65N)];
+                M2_65 = [ip summary_statsCLIM(TMP2,npixels2MAR65N)];
             else
                 M2 = [ip 0 0 0 0];
                 M2_65 = [ip 0 0 0 0];
