@@ -51,7 +51,11 @@ for ip = ndperiod
         npixels2MAR = nan(1,nyears);
         npixels2MAR65N = nan(1,nyears);
         
+        cc = 0;
+        
         for iy = years
+            
+            cc = cc + 1;
             
             filename = sprintf('%c%c%0.0f%03.0f_%0.0f%s.nc',sensor,sensorSST,iy,ip,ndays,period);
             file_test = ['grep ' filename ' list_8D.txt']; % file list in local folder
@@ -67,7 +71,7 @@ for ip = ndperiod
                     sprintf('Opening %s, variable %s',filename,varname)
                     var_grid2 = ncread(filepath,varname);
                     var_grid2(var_grid2==-999) = nan; % Note that ice data on grid 2 no longer has the "continent" or "non-covered area" flags
-                    TMP2(:,id+1) = var_grid2;
+                    TMP2(:,cc) = var_grid2;
                     
                     % Prepare marine pixel count for stats only for 1 DMSPt product
                     if strcmp('dmspt_Asst_chlgsm',varname)

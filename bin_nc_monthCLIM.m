@@ -48,8 +48,12 @@ for ip = 1:12
         % Preallocate data storage over nyears statistics for grids 1 and 2
         npixels2MAR = nan(1,nyears);
         npixels2MAR65N = nan(1,nyears);
-        
+                
+        cc = 0;
+
         for iy = years
+            
+            cc = cc + 1;
             
             % Define first day of month for each year
             ndays = [31 28 31 30 31 30 31 31 30 31 30 31];
@@ -72,7 +76,7 @@ for ip = 1:12
                     sprintf('Opening %s, variable %s',filename,varname)
                     var_grid2 = ncread(filepath,varname);
                     var_grid2(var_grid2==-999) = nan; % Note that ice data on grid 2 no longer has the "continent" or "non-covered area" flags
-                    TMP2(:,id+1) = var_grid2;
+                    TMP2(:,cc) = var_grid2;
                     
                     % Prepare marine pixel count for stats only for 1 DMSPt product
                     if strcmp('dmspt_Asst_chlgsm',varname)
