@@ -8,7 +8,8 @@ tic
 
 %% Some initial settings
 % varnameS = {'Ice' 'chl_gsm' 'chl_gsm_mustapha' 'chl_cota' 'PP' 'PAR_cloud' 'CF_mean'}; % VERSION FOR SOPHIE
-varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
+% varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
+varnameS  = {'Zeu' 'fstrat' 'fmix' 'fcocc' 'PAR'}; % VERSION DMSPT second round
 years = 2003:2015;
 nyears = length(years);
 ndays = 8; % number of days averaged
