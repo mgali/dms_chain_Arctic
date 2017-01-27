@@ -1,4 +1,7 @@
-% SPATIAL BINNING FROM GRID1 (HIGHER RESOLUTION) TO GRID2
+% SPATIAL BINNING FROM GRID1 TO GRID2
+% Grid2 can have higher or lower spatial resolution, or both
+% Supplied list of matching pixel indexs does the job.
+% Martí Galí Tàpias September 2016
 
 function [dataout] = repbin_grid1_grid2(datain,indexlist_array)
 
