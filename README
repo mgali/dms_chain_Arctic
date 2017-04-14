@@ -1,20 +1,54 @@
 Instructions for binning Takuvik chain data.
 
-Done with code bin_nc_month_reproject.m or bin_nc_ndays_reproject.m. which call:
-	repbin_grid1_grid2.m
-	summary_stats.m
-	AM_list.txt, with all daily *PP.nc files avaialble on Takuvik servers
- 	(should be in same folder)
+1. Binning
+==========
+Spatial and temporal binning from daily 4.6 km (MODIS) or 9.2 km (SeaWiFS) done with code:
+	bin_nc_ndays_reproject.m (n-days periods, typically 8D), or
+	bin_nc_month_reproject.m (monthly periods)
 
-	* Note that on 30-Sep-2016 bin_nc_month_reproject.m replaced bin_nc_month_28kmfill.m. The old file was no longer updated.
+Spatial binning outputs averages of 6x6 (~28km, current default), 8x8 (~37 km) or 10x10 (~46 km) MODIS macropixels. The two binning codes listed above call the following codes, which should be on the same directory:
+		repbin_grid1_grid2.m (which does the spatial binning given a list of indices matching grid1 and grid2).
+		summary_stats.m (which optionally outputs some stats for the chosen variable(s)).
 
-Climatological means can be calculated with bin_nc_*CLIM.m, which call:
-	summary_statsCLIM.m
+	* Note that on 30-Sep-2016 bin_nc_month_reproject.m replaced bin_nc_month_28kmfill.m. The old file was no longer 
+	updated.
 
+
+Edits needed
+————————————
 Running the code on your computer may require...
-	- Updating the list of Takuvik chain files (AM_list.txt) used to test for file existence prior to making operations.
-	- Updating paths to: input files (Takuvik chain, grids, bathymetry)
-	- Removing old summary*.txt files from directory if they have been created on the same day (to avoid appending new dta on pre-existing file).
-	- Commenting-uncommenting lines where type of output (*.nc versus *.txt) is chosen.
-	- Editing main code (bin_nc*reproject.m) to choose years, n-days periods, variable names, variables that produce summary stats (var4stats), output name format (yyyyddd vs yyyymmdd)
 
+- Updating the list of input files (eg AM_list.txt, SI_list.txt) used to test for file existence prior to making operations. A function to do this within the code may be included in future versions.
+- Updating paths to: input files (Takuvik chain, grids, bathymetry)
+- Removing old summary*.txt files from directory if they have been created on the same day (to avoid appending new data on pre-existing file).
+- Editing lines where output file (*.nc versus *.txt) and date (yyyyddd vs yyyymmdd) formats are chosen.
+- Editing main code (bin_nc*reproject.m) to choose years, n-days periods, variable names, variables that produce summary stats (var4stats).
+
+
+2. Climatologies from binned data
+=================================
+Climatological means can be calculated with:
+	bin_nc_ndaysCLIM.m, or
+	bin_nc_monthCLIM.m
+
+Which in turn call
+		summary_statsCLIM.m
+
+Edit the code to select variables may be needed, as above
+
+
+3. Gap-filling
+==============
+Done with codes:
+	dmspt_fill.m (for DMSPt products)
+	danyvar_fill.m (for any other variable)
+
+Codes are identical, only output (filled) variable names differ. Both scripts call:
+		find_paths_4fill.m
+
+This script searches the paths of files used for filling up gaps in a given file. It outputs four paths: those of the prior and posterior 8D file, and those of the corresponding 8D and monthly climatology. Gaps are filled hierarchically by
+	1) Interpolating temporally between prior and posterior 8D periods
+	2) Filling remaining gaps with 8D climatology
+	3) Filling remaining gaps (if any!) with the monthly climatology
+
+Data used for gap-filling correspond always to same sensor and product(eg Aqua, chl_gsm).

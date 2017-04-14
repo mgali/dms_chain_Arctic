@@ -1,40 +1,84 @@
 % BIN DAILY IMAGES TO SPECIFIED PERIOD (NDAYS)
 % Martí Galí Tàpias, 18 Feb 2016
-% Improved 26 Sep 2016
+% Improved 26 Sep 2016, 14 Apr 2017
 tic
+today = date;
 
-today=date;
+%% Initial settings TO EDIT: variable names and corresponding paths
 
-%% Some initial settings
-varnameS  = {'chl_gsm' 'PP' 'dmspt_Asst_chloc' 'dmspt_Asst_chlgsm' 'dmspt_Asst_chlcota' 'Ice'}; % VERSION DMSPT
-% varnameS  = {'dmspt_Asst_chlgsm'}; % VERSION STATS ONLY
-var4stats = 'dmspt_Asst_chlgsm';
-years = 2003:2015; % normally 2003:2015
+years = 1998:2007; % normally 2003:2016 for MODIS and 1998:2007 for SeaWiFS
+ndays = 8; % number of days averaged
+ndperiod = 1 + ndays*(0:(365/ndays)); % vector with first day of n-days periods
+ndperiod(ndperiod>366-floor(ndays/2)) = []; % remove periods starting too close to end of year relative to binning interval
 period = 'MONTH';
-ice_crit = 0.1;
 kmgrid2 = '28'; % 28, 37 or 46 km macropixel size
-outformat = 'netcdf'; % 'netcdf' r 'text'
+outformat = 'netcdf'; % 'netcdf' or 'text'
+sensor = 'S'; % A for MODIS-Aqua, S for SeaWiFS
+sensorATM = 'I'; % M for MODIS atmosphere, I for ISCCP
+ice_crit = 0.1; % ice concentration above which data are not used
 
-%% Set file paths and name
-dirpath = '/Volumes/output-dev/Takuvik/Teledetection/Couleur/SORTIES/34_2_0/NOCLIM/'; % or 35_0_0 just for 2015
-grid1path = '/Volumes/output-prod/Takuvik/Teledetection/All/Constant/';
-grid2path = '~/Desktop/Grids_maps/grids/grid';
-outpath = '/Volumes/rap/martigalitapias/binned_data/';
-sensor = 'A';
-sensorSST = 'M';
+% ---------------- Variable groups and corresponding paths ----------------
+filetype = 'dmspt'; % 'PP', 'dmspt', 'pic'
 
-%% Grid 1
-lat1 = ncread(strcat(grid1path,sensor,'45N.nc'),'lat');
-zbot1 = ncread('/Volumes/output-prod/Takuvik/Teledetection/Couleur/SORTIES/Bathymetre/Province_Zbot_MODISA_L3binV2.nc','Zbot');
+if strcmp(filetype,'PP')
+    varnameS = {'chl_gsm' 'chl_oc' 'PP' 'Ice' 'aCDOM_412'};
+    var4stats = 'chl_gsm';
+    dirpath = '/Volumes/output-prod/Takuvik/Teledetection/Couleur/SORTIES/35_3_2/NOCLIM';
+    icedirpath = dirpath;
+else
+    icedirpath = '/Volumes/output-prod/Takuvik/Teledetection/Couleur/SORTIES/35_3_2/NOCLIM';
+    if strcmp(filetype,'dmspt')
+        varnameS = {'dmspt_Asst_chlgsm'};% 'dmspt_Asst_chloc' 'dmspt_Asst_chlcota'};
+        var4stats = 'dmspt_Asst_chlgsm';
+        dirpath = '/Volumes/scratch/martigalitapias/35_3_2/NOCLIM';
+    elseif strcmp(filetype,'pic')
+        varnameS = {'pic'};
+        dirpath = '/Volumes/output-prod/Takuvik/Teledetection/Products/pic/0_0_1_0';
+        sensorATM = '';
+    end
+end
+
+% File lists: Remove pre-existing lists and create up-to-date ones
+% Lists created in loop (append), otherwise list is too long for bash.
+% Comment if existing lists are OK.
+dummy01 = system(sprintf('rm %c%c_list_PP_%s.txt',sensor,sensorATM,today));
+if ~strcmp(filetype,'PP')
+    dummy02 = system(sprintf('rm %c%c_list_%s_%s.txt',sensor,sensorATM,filetype,today));
+end
+for iy = years
+    dummy1 = system(sprintf('ls %s/%04i/*/%c%c*_PP.nc >> %c%c_list_PP_%s.txt',icedirpath,iy,sensor,sensorATM,sensor,sensorATM,today));
+    if ~strcmp(filetype,'PP')
+        dummy2 = system(sprintf('ls %s/%04i/*/%c%c*_%s.nc >> %c%c_list_%s_%s.txt',dirpath,iy,sensor,sensorATM,filetype,sensor,sensorATM,filetype,today));
+    end
+end
+toc, sprintf('New file lists created')
+
+% ------------------------------ Common paths -----------------------------
+grid1path = '/Volumes/output-prod/Takuvik/Teledetection/Grid/trunk/201510151636';
+% grid1path = '~/Desktop/Grids_maps/grids/'; % Alternative (Desktop of my MBP or taku-leifr)
+grid2path = '~/Desktop/Grids_maps/grids'; % Currently on my Desktop (on taku-leifr)
+user = 'martigalitapias';
+outpath = sprintf('/Volumes/rap/%s/binned_data',user);
+
+% ---------------- Load grid 1 and corresponding bathymetry ---------------
+lat1 = ncread(sprintf('%s/%c45N.nc',grid1path,sensor),'lat');
+if sensor=='A'
+    zbot1 = ncread('/Volumes/output-prod/Takuvik/Teledetection/Couleur/SORTIES/Bathymetre/Province_Zbot_MODISA_L3binV2.nc','Zbot');
+elseif sensor=='S'
+    zbot1 = ncread('/Volumes/output-prod/Takuvik/Teledetection/Couleur/SORTIES/Bathymetre/Province_Zbot_SeaWiFS_L3binV2.nc','Zbot');
+end
 npixels1 = length(lat1);
 
-%% Grid 2, conversion scheme
-load(strcat('~/Desktop/Geophysical_data/Bathymetry_gebco08/Grids_SW_MODIS_4gebco/gebco_08_',kmgrid2,'km.mat'));
-zbot2 = zbotmin;
-grid2 = dlmread([grid2path kmgrid2 'km_45N.txt']);
+% ---------------- Load grid 2 and corresponding bathymetry ---------------
+load(sprintf('~/Desktop/Geophysical_data/Bathymetry_gebco08/Grids_SW_MODIS_4gebco/gebco_08_%skm.mat',kmgrid2));
+zbot2 = zbotmin; % may want tho choose zbotmean, more restrictive pixel inclusion
+grid2 = dlmread(sprintf('%s/grid%skm_45N.txt',grid2path,kmgrid2));
 lat2 = grid2(:,2);
 npixels2 = length(lat2);
-load(['indlist_A45N_to_' kmgrid2 'km.mat']); % grid conversion scheme
+
+% --------------- Load grid1 -> grid2 conversion scheme -------------------
+load(sprintf('indlist_%c45N_to_%skm.mat',sensor,kmgrid2)); % in current dir
+
 
 %% Binning
 for iy = years
@@ -44,10 +88,7 @@ for iy = years
     if ~mod(iy,4)
         ndays(2) = ndays(2) + 1; % leap year
     end
-    % Change version of PP files if year is 2015 or later
-    if iy >= 2015
-        dirpath = '/Volumes/output-dev/Takuvik/Teledetection/Couleur/SORTIES/35_0_0/NOCLIM/';
-    end
+    
     ndperiod = cumsum([1 ndays(1:(end-1))]);
     mo = 0;
     for ip = ndperiod
@@ -72,12 +113,20 @@ for iy = years
             npixels2MAR65N = nan(1,ndays(mo));
             
             for id = 0:(ndays(mo)-1)
-                filename = sprintf('%c%c%0.0f%03.0f_PP.nc',sensor,sensorSST,iy,ip+id);
-                file_test = ['grep ' filename ' ' sensor sensorSST '_list.txt']; % file list in local folder
+                filename = sprintf('%c%c%04i%03i_%s.nc',sensor,sensorATM,iy,ip+id,filetype);
+                file_test = sprintf('grep %s %c%c_list_%s_%s.txt',filename,sensor,sensorATM,filetype,today); % test against file list in local folder
                 status = system(file_test);
-                if ~status % test file
-                    sprintf('File %s found',filename)
-                    filepath = sprintf('%s%0.0f/%03.0f/%s',dirpath,iy,ip+id,filename);
+                icefilename = filename;
+                status_ice = status;
+                if ~strcmp(filetype,'PP')
+                    icefilename = sprintf('%c%c%04i%03i_PP.nc',sensor,sensorATM,iy,ip+id);
+                    ice_file_test = sprintf('grep %s %c%c_list_PP_%s.txt',icefilename,sensor,sensorATM,today); % test against file list in local folder
+                    status_ice = system(ice_file_test);
+                end
+                if ~status && ~status_ice
+                    sprintf('Files found')
+                    filepath = sprintf('%s/%04i/%0i/%s',dirpath,iy,ip+id,filename);
+                    icepath = sprintf('%s/%04i/%0i/%s',icedirpath,iy,ip+id,icefilename);
                     ni=ncinfo(filepath);
                     stra=char(ni.Variables.Name);
                     var_test = strmatch(varname,stra,'exact');
@@ -89,7 +138,7 @@ for iy = years
                             var_grid1(var_grid1==max(var_grid1)) = 0;
                             var_grid1(var_grid1<0 | var_grid1>1) = nan;
                         else
-                            Ice1 = ncread(filepath,'Ice');
+                            Ice1 = ncread(icepath,'Ice');
                             Ice1(Ice1==max(Ice1)) = 0; % assign non-covered marine pixels to Ice=0
                             Ice1(Ice1<0 | Ice1>1) = nan; % remove -999 values or values >1 (used as flag)
                             var_grid1(Ice1 > ice_crit) = nan; % do not use ocean color data with Ice>0.1 (sub-pixel contamination not corrected)
@@ -119,7 +168,7 @@ for iy = years
             VARSOUT(:,iv) = nanmean(TMP2,2);
             VARSOUT(isnan(VARSOUT)) = -999;
             
-            % Store complete stats only for 1 DMSPt product
+            % Store complete stats only for chosen variable (1 is enough!)
             if strcmp(var4stats,varname)
                 if ~status && ~isempty(var_test)
                     % Summary statistics for all latitudes
@@ -136,31 +185,29 @@ for iy = years
                     M2 = [iy ip 0 0 0 0 0 nan nan nan nan];
                     M2_65 = [iy ip 0 0 0 0 0 nan nan nan nan];
                 end
-                dlmwrite(sprintf('summary_%s_%s_4km_%s.txt',varname,period, today),M1,'-append')
-                dlmwrite(sprintf('summary65N_%s_%s_4km_%s.txt',varname,period,today),M1_65,'-append')
+                dlmwrite(sprintf('summary_%s_%s_%cgrid_%s.txt',varname,period,sensor,today),M1,'-append')
+                dlmwrite(sprintf('summary65N_%s_%s_%cgrid_%s.txt',varname,period,sensor,today),M1_65,'-append')
                 dlmwrite(sprintf('summary_%s_%s_%skm_%s.txt',varname,period,kmgrid2,today),M2,'-append')
                 dlmwrite(sprintf('summary65N_%s_%s_%skm_%s.txt',varname,period,kmgrid2,today),M2_65,'-append')
             end
             
         end % loop on varnameS
         
-                % Write netcdf or text file
-                if ~isempty(VARSOUT)
-                    if strcmp(outformat,'netcdf')
-                        outname = sprintf('%s%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorSST,period,kmgrid2,iy,sensor,sensorSST,iy,ip,period);
-                        for iv = 1:length(newvarnameS)
-                            nccreate(outname,newvarnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
-                            ncwrite(outname,newvarnameS{iv},VARSOUT(:,iv));
-                        end
-                    elseif strcmp(outformat,'text')
-                        outname = sprintf('%s%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.txt',outpath,sensor,sensorSST,period,kmgrid2,iy,sensor,sensorSST,iy,ip,period);
-                        dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
-                    end
+        % Write netcdf or text file
+        if ~isempty(VARSOUT)
+            if strcmp(outformat,'netcdf')
+                outname = sprintf('%s/%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorATM,period,kmgrid2,iy,sensor,sensorATM,iy,ip,period);
+                for iv = 1:length(varnameS)
+                    nccreate(outname,varnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
+                    ncwrite(outname,varnameS{iv},VARSOUT(:,iv));
                 end
+            elseif strcmp(outformat,'text')
+                outname = sprintf('%s/%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.txt',outpath,sensor,sensorATM,period,kmgrid2,iy,sensor,sensorATM,iy,ip,period);
+                dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
+            end
+        end
         
     end % loop on nday periods
 end % loop on years
 toc
-
-% bin_nc_monthCLIM % Uncomment if you want to run codde to compute climatological means after the spatiotemporal binning
 
