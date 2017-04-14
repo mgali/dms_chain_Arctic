@@ -34,7 +34,9 @@ Climatological means can be calculated with:
 Which in turn call
 		summary_statsCLIM.m
 
-Edit the code to select variables may be needed, as above
+Edits needed
+————————————
+Update list of input variables, as above
 
 
 3. Gap-filling
@@ -52,3 +54,11 @@ This script searches the paths of files used for filling up gaps in a given file
 	3) Filling remaining gaps (if any!) with the monthly climatology
 
 Data used for gap-filling correspond always to same sensor and product(eg Aqua, chl_gsm).
+
+* Script may fail if it does not find one file needed for gap filling I assumed all 8D and monthly files were available.
+
+Edits needed
+————————————
+- Update list of input and output variables
+
+
