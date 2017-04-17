@@ -57,7 +57,7 @@ toc, sprintf('New file lists created')
 grid1path = '/Volumes/output-prod/Takuvik/Teledetection/Grid/trunk/201510151636';
 % grid1path = '~/Desktop/Grids_maps/grids/'; % Alternative (Desktop of my MBP or taku-leifr)
 grid2path = '~/Desktop/Grids_maps/grids'; % Currently on my Desktop (on taku-leifr)
-user = 'martigalitapias';
+user = '';
 outpath = sprintf('/Volumes/rap/%s/binned_data',user);
 
 % ---------------- Load grid 1 and corresponding bathymetry ---------------
