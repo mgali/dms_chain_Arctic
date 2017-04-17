@@ -196,13 +196,13 @@ for iy = years
         % Write netcdf or text file
         if ~isempty(VARSOUT)
             if strcmp(outformat,'netcdf')
-                outname = sprintf('%s/%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.nc',outpath,sensor,sensorATM,period,kmgrid2,iy,sensor,sensorATM,iy,ip,period);
+                outname = sprintf('%s/%c%c_%s_%skm/%04i/%c%c%04i%03i_%s.nc',outpath,sensor,sensorATM,period,kmgrid2,iy,sensor,sensorATM,iy,ip,period);
                 for iv = 1:length(varnameS)
                     nccreate(outname,varnameS{iv},'format','netcdf4','Dimensions',{'r' npixels2 'c' 1});
                     ncwrite(outname,varnameS{iv},VARSOUT(:,iv));
                 end
             elseif strcmp(outformat,'text')
-                outname = sprintf('%s/%c%c_%s_%skm/%0.0f/%c%c%0.0f%03.0f_%s.txt',outpath,sensor,sensorATM,period,kmgrid2,iy,sensor,sensorATM,iy,ip,period);
+                outname = sprintf('%s/%c%c_%s_%skm/%04i/%c%c%04i%03i_%s.txt',outpath,sensor,sensorATM,period,kmgrid2,iy,sensor,sensorATM,iy,ip,period);
                 dlmwrite(outname,VARSOUT,'delimiter','\t','precision','%.4f');
             end
         end
