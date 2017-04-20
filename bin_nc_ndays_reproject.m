@@ -15,10 +15,11 @@ kmgrid2 = '28'; % 28, 37 or 46 km macropixel size
 outformat = 'netcdf'; % 'netcdf' or 'text'
 sensor = 'S'; % A for MODIS-Aqua, S for SeaWiFS
 sensorATM = 'I'; % M for MODIS atmosphere, I for ISCCP
+sensorATMbis = sensorATM;
 ice_crit = 0.1; % ice concentration above which data are not used
 
 % ---------------- Variable groups and corresponding paths ----------------
-filetype = 'dmspt'; % 'PP', 'dmspt', 'pic'
+filetype = 'pic'; % 'PP', 'dmspt', 'pic'
 
 if strcmp(filetype,'PP')
     varnameS = {'chl_gsm' 'chl_oc' 'PP' 'Ice' 'aCDOM_412'};
@@ -28,13 +29,14 @@ if strcmp(filetype,'PP')
 else
     icedirpath = '/Volumes/output-prod/Takuvik/Teledetection/Couleur/SORTIES/35_3_2/NOCLIM';
     if strcmp(filetype,'dmspt')
-        varnameS = {'dmspt_Asst_chlgsm'};% 'dmspt_Asst_chloc' 'dmspt_Asst_chlcota'};
+        varnameS = {'dmspt_Asst_chlgsm' 'dmspt_Asst_chloc' 'dmspt_Asst_chlcota'};
         var4stats = 'dmspt_Asst_chlgsm';
         dirpath = '/Volumes/scratch/martigalitapias/35_3_2/NOCLIM';
     elseif strcmp(filetype,'pic')
         varnameS = {'pic'};
+        var4stats = 'pic';
         dirpath = '/Volumes/output-prod/Takuvik/Teledetection/Products/pic/0_0_1_0';
-        sensorATM = '';
+        sensorATMbis = '';
     end
 end
 
@@ -43,12 +45,13 @@ end
 % Comment if existing lists are OK.
 dummy01 = system(sprintf('rm %c%c_list_PP_%s.txt',sensor,sensorATM,today));
 if ~strcmp(filetype,'PP')
-    dummy02 = system(sprintf('rm %c%c_list_%s_%s.txt',sensor,sensorATM,filetype,today));
+    dummy02 = system(sprintf('rm %c%c_list_%s_%s.txt',sensor,sensorATMbis,filetype,today));
 end
-for iy = years
+if sensor=='S', ylist = 1998:2007; elseif sensor =='A', ylist = 2003:2016; end
+for iy = ylist
     dummy1 = system(sprintf('ls %s/%04i/*/%c%c*_PP.nc >> %c%c_list_PP_%s.txt',icedirpath,iy,sensor,sensorATM,sensor,sensorATM,today));
     if ~strcmp(filetype,'PP')
-        dummy2 = system(sprintf('ls %s/%04i/*/%c%c*_%s.nc >> %c%c_list_%s_%s.txt',dirpath,iy,sensor,sensorATM,filetype,sensor,sensorATM,filetype,today));
+        dummy2 = system(sprintf('ls %s/%04i/*/%c%c*_%s.nc >> %c%c_list_%s_%s.txt',dirpath,iy,sensor,sensorATMbis,filetype,sensor,sensorATMbis,filetype,today));
     end
 end
 toc, sprintf('New file lists created')
@@ -57,7 +60,7 @@ toc, sprintf('New file lists created')
 grid1path = '/Volumes/output-prod/Takuvik/Teledetection/Grid/trunk/201510151636';
 % grid1path = '~/Desktop/Grids_maps/grids/'; % Alternative (Desktop of my MBP or taku-leifr)
 grid2path = '~/Desktop/Grids_maps/grids'; % Currently on my Desktop (on taku-leifr)
-user = '';
+user = 'WhateverUser';
 outpath = sprintf('/Volumes/rap/%s/binned_data',user);
 
 % ---------------- Load grid 1 and corresponding bathymetry ---------------
@@ -114,20 +117,21 @@ for iy = years
                 end
             end
             for id = 0:nd
-                filename = sprintf('%c%c%04i%03i_%s.nc',sensor,sensorATM,iy,ip+id,filetype);
-                file_test = sprintf('grep %s %c%c_list_%s_%s.txt',filename,sensor,sensorATM,filetype,today); % test against file list in local folder
+                filename = sprintf('%c%c%04i%03i_%s.nc',sensor,sensorATMbis,iy,ip+id,filetype);
+                file_test = sprintf('grep %s %c%c_list_%s_%s.txt',filename,sensor,sensorATMbis,filetype,today); % test against file list in local folder
                 status = system(file_test);
-                icefilename = filename;
-                status_ice = status;
-                if ~strcmp(filetype,'PP')
+                if strcmp(filetype,'PP')
+                    icefilename = filename;
+                    status_ice = status;
+                else
                     icefilename = sprintf('%c%c%04i%03i_PP.nc',sensor,sensorATM,iy,ip+id);
                     ice_file_test = sprintf('grep %s %c%c_list_PP_%s.txt',icefilename,sensor,sensorATM,today); % test against file list in local folder
                     status_ice = system(ice_file_test);
                 end
                 if ~status && ~status_ice
                     sprintf('Files found')
-                    filepath = sprintf('%s/%04i/%0i/%s',dirpath,iy,ip+id,filename);
-                    icepath = sprintf('%s/%04i/%0i/%s',icedirpath,iy,ip+id,icefilename);
+                    filepath = sprintf('%s/%04i/%03i/%s',dirpath,iy,ip+id,filename);
+                    icepath = sprintf('%s/%04i/%03i/%s',icedirpath,iy,ip+id,icefilename);
                     ni = ncinfo(filepath);
                     stra = char(ni.Variables.Name);
                     var_test = strmatch(varname,stra,'exact');
